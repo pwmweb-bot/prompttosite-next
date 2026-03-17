@@ -73,6 +73,7 @@ function DashboardPageInner() {
   const [session,        setSession]        = useState<Session | null>(null);
   const [generations,    setGenerations]    = useState<Generation[]>([]);
   const [loading,        setLoading]        = useState(true);
+  const [isAdmin,        setIsAdmin]        = useState(false);
   const [activeTab,      setActiveTab]      = useState<'sites' | 'billing'>('sites');
   const [deleteTarget,   setDeleteTarget]   = useState<string | null>(null);
   const [deleting,       setDeleting]       = useState(false);
@@ -93,6 +94,13 @@ function DashboardPageInner() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.replace('/auth'); return; }
       setSession(session);
+      // Check admin flag
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+      if (profile?.is_admin) setIsAdmin(true);
       await loadGenerations(session.user.id);
     })();
 
@@ -227,6 +235,9 @@ function DashboardPageInner() {
           <Link href="/" className={styles.navLogo}>Prompt<span>ToSite</span></Link>
           <div className={styles.navRight}>
             {session && <span className={styles.navEmail}>{session.user.email}</span>}
+            {isAdmin && (
+              <Link href="/admin" className={`${styles.btnSm} ${styles.btnSmOutline}`}>⚙ Admin</Link>
+            )}
             <Link href="/build" className={`${styles.btnSm} ${styles.btnSmOutline}`}>+ New website</Link>
             <button className={`${styles.btnSm} ${styles.btnSmOutline}`} onClick={signOut}>Sign out</button>
           </div>

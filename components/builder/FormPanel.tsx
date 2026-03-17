@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useBuilderStore } from '@/store/builderStore';
 import {
   allPages,
@@ -403,7 +404,7 @@ interface TemplateLibraryProps {
 function TemplateLibrary({ onClose }: TemplateLibraryProps) {
   const store = useBuilderStore();
 
-  return (
+  return createPortal(
     <div className={styles.tplOverlay} onClick={onClose}>
       <div className={styles.tplModal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.tplModalHead}>
@@ -428,7 +429,8 @@ function TemplateLibrary({ onClose }: TemplateLibraryProps) {
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
