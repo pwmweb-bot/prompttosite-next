@@ -94,13 +94,7 @@ function DashboardPageInner() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.replace('/auth'); return; }
       setSession(session);
-      // Check admin flag
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', session.user.id)
-        .single();
-      if (profile?.is_admin) setIsAdmin(true);
+      if (session.user.email === 'pwmweb@gmail.com') setIsAdmin(true);
       await loadGenerations(session.user.id);
     })();
 

@@ -60,14 +60,8 @@ export default function AdminPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.replace('/auth'); return; }
 
-      // 2. Check admin flag
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', session.user.id)
-        .single();
-
-      if (profileError || !profile?.is_admin) {
+      // 2. Check admin — superuser email gate
+      if (session.user.email !== 'pwmweb@gmail.com') {
         router.replace('/dashboard');
         return;
       }
