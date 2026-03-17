@@ -1,0 +1,75 @@
+/* ─── Browser Preview ────────────────────────────────────────────────────── */
+.viewportWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.viewportToggles {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  padding: 6px 12px;
+  background: #13192a;
+  border-bottom: 1px solid #1e293b;
+  flex-shrink: 0;
+}
+
+.btnViewport {
+  background: #1e293b;
+  border: 1px solid #2d3f55;
+  color: #475569;
+  padding: 5px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.btnViewport:hover {
+  color: #94a3b8;
+  background: #273549;
+}
+
+.btnViewportActive {
+  color: #e2e8f0;
+  border-color: #3b82f6;
+  background: #1d3050;
+}
+
+/* ─── Viewport Container ─────────────────────────────────────────────────── */
+.browserViewport {
+  flex: 1;
+  background: #e2e8f0;
+  overflow: auto;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.vpDesktop {
+  /* iframe fills 100% width */
+}
+
+.vpTablet {
+  /* iframe fixed at 768px */
+}
+
+.vpMobile {
+  /* iframe fixed at 375px */
+}
+
+/* ─── Empty State ────────────────────────────────────────────────────────── */
+.emptyPreview {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f172a;
+  color: #475569;
+  font-size: 14px;
+}

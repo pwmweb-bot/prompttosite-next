@@ -1,0 +1,213 @@
+/* ─── Auth page CSS Module ─────────────────────────────────────────────────── */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--light);
+  font-family: 'Inter', sans-serif;
+}
+
+/* Nav */
+.nav {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+}
+.navInner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  height: 60px;
+}
+.navLogo {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.3px;
+  text-decoration: none;
+  color: var(--black);
+}
+.navLogo span { color: var(--accent); }
+
+/* Wrap */
+.authWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+/* Card */
+.authCard {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 4px 40px rgba(0, 0, 0, 0.06);
+}
+
+.heading {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  letter-spacing: -0.4px;
+  margin-bottom: 6px;
+}
+.subtitle {
+  font-size: 14px;
+  color: var(--mid);
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  background: var(--light);
+  border-radius: var(--radius);
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 28px;
+}
+.tab {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--mid);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.tabActive {
+  background: var(--white);
+  color: var(--black);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Message */
+.msg {
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.msgError   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.msgSuccess { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--black);
+}
+.input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+  background: var(--white);
+}
+.input:focus { border-color: var(--accent); }
+
+.btnPrimary {
+  width: 100%;
+  padding: 13px;
+  background: var(--accent);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: 'Inter', sans-serif;
+  margin-top: 4px;
+}
+.btnPrimary:hover    { background: var(--accent-h); }
+.btnPrimary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--mid);
+  font-size: 12px;
+  margin: 16px 0;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Magic link button */
+.btnMagic {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: var(--black);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btnMagic:hover    { border-color: var(--accent); color: var(--accent); }
+.btnMagic:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Magic link sent */
+.magicSent {
+  text-align: center;
+  padding: 12px 0;
+}
+.magicIcon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+.magicSent h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.magicSent p {
+  font-size: 14px;
+  color: var(--mid);
+  line-height: 1.6;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 13px;
+  color: var(--mid);
+}
+.footer a { color: var(--accent); text-decoration: none; font-weight: 500; }

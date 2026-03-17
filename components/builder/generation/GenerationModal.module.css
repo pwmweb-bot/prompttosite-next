@@ -1,0 +1,443 @@
+/* ─── Generation Modal ───────────────────────────────────────────────────── */
+.genModal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(5, 8, 18, 0.96);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Loading Screen ─────────────────────────────────────────────────────── */
+.genLoading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.loadingOrb {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 36px;
+}
+
+.orbRing {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.orbRing1 {
+  inset: 0;
+  border-color: rgba(37, 99, 235, 0.7);
+  animation: orbSpin 3s linear infinite;
+}
+
+.orbRing2 {
+  inset: 12px;
+  border-color: rgba(124, 58, 237, 0.6);
+  animation: orbSpin 2s linear infinite reverse;
+}
+
+.orbCore {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1d4ed8, #6d28d9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  animation: orbPulse 2s ease-in-out infinite;
+  box-shadow: 0 0 32px rgba(109, 40, 217, 0.5);
+}
+
+@keyframes orbSpin { to { transform: rotate(360deg); } }
+@keyframes orbPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.loadingTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  color: #f1f5f9;
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+}
+
+.loadingSubtitle {
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 36px;
+}
+
+.loadingProgressTrack {
+  width: 320px;
+  max-width: 90vw;
+  height: 4px;
+  background: #1e293b;
+  border-radius: 100px;
+  overflow: hidden;
+  margin-bottom: 36px;
+}
+
+.loadingProgressFill {
+  height: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg, #2563eb, #7c3aed);
+  transition: width 0.6s ease;
+}
+
+.loadingStages {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 280px;
+}
+
+.stageItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  font-size: 14px;
+  color: #334155;
+  transition: color 0.4s;
+}
+
+.stageActive {
+  color: #e2e8f0;
+}
+
+.stageDone {
+  color: #4ade80;
+}
+
+.stageIcon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transition: all 0.4s;
+}
+
+.stageActive .stageIcon {
+  border-color: #3b82f6;
+  background: #1e3a5f;
+  animation: stagePulse 1.2s ease-in-out infinite;
+}
+
+.stageDone .stageIcon {
+  border-color: #16a34a;
+  background: #052e16;
+}
+
+@keyframes stagePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(59, 130, 246, 0); }
+}
+
+.stageLabel {
+  font-weight: 500;
+}
+
+.errorIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+/* ─── Preview Screen ─────────────────────────────────────────────────────── */
+.genPreview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─── Browser Chrome ─────────────────────────────────────────────────────── */
+.browserChrome {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #13192a;
+  border-bottom: 1px solid #1e293b;
+  flex-shrink: 0;
+}
+
+.browserTl {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tl {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.tlR { background: #ff5f57; }
+.tlY { background: #ffbd2e; }
+.tlG { background: #28c840; }
+
+.tlR:hover { background: #ff3b30; }
+
+.browserUrlBar {
+  flex: 1;
+  background: #0d1117;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #94a3b8;
+  font-family: monospace;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.browserLock {
+  color: #4ade80;
+  font-size: 10px;
+}
+
+.browserActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btnBrowser {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #1e293b;
+  border: 1px solid #2d3f55;
+  color: #94a3b8;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btnBrowser:hover:not(:disabled) {
+  background: #273549;
+  color: #e2e8f0;
+}
+
+.btnBrowser:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnBrowserAccent {
+  background: linear-gradient(135deg, #1d4ed8, #6d28d9);
+  border-color: transparent;
+  color: #ffffff;
+}
+
+.btnBrowserAccent:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btnBrowserClose {
+  background: none;
+  border: none;
+  color: #475569;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.btnBrowserClose:hover {
+  color: #e2e8f0;
+}
+
+.savedMsg {
+  font-size: 12px;
+  color: #4ade80;
+  font-weight: 500;
+}
+
+/* ─── Page Tabs ──────────────────────────────────────────────────────────── */
+.browserPageTabs {
+  display: flex;
+  gap: 2px;
+  padding: 6px 12px 0;
+  background: #0d1117;
+  border-top: 1px solid #1e293b;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.browserPageTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.browserTab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 13px;
+  font-size: 11px;
+  font-family: monospace;
+  color: #64748b;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  background: none;
+}
+
+.browserTab:hover {
+  color: #94a3b8;
+  background: #131c2e;
+}
+
+.browserTabActive {
+  color: #e2e8f0;
+  background: #13192a;
+  border-color: #1e293b;
+}
+
+.browserTabDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #3b82f6;
+}
+
+/* ─── Refine Panel ───────────────────────────────────────────────────────── */
+.refinePanel {
+  background: #0a0f1a;
+  border-top: 1px solid #1e293b;
+  padding: 10px 12px;
+  flex-shrink: 0;
+}
+
+.refineRow {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.refineInput {
+  flex: 1;
+  background: #131c2e;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  padding: 8px 12px;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+  line-height: 1.5;
+  min-height: 36px;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.refineInput::placeholder {
+  color: #334155;
+}
+
+.refineInput:focus {
+  border-color: #3b82f6;
+}
+
+.refineInput:disabled {
+  opacity: 0.5;
+}
+
+.btnRefine {
+  padding: 8px 16px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.btnRefine:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.btnRefine:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refineStatus {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.refineSpinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #1e293b;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Close Button ───────────────────────────────────────────────────────── */
+.btnClose {
+  padding: 10px 24px;
+  background: #1e293b;
+  color: #94a3b8;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  margin-top: 24px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btnClose:hover {
+  background: #273549;
+  color: #e2e8f0;
+}
