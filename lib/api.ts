@@ -104,3 +104,73 @@ export async function stripePortal(
   });
   return res.json();
 }
+
+// ─── Hosting ──────────────────────────────────────────────────────────────────
+
+export async function checkDomain(domain: string): Promise<{
+  domain?: string;
+  available?: boolean;
+  purchasePrice?: number;
+  renewalPrice?: number;
+  error?: string;
+}> {
+  const res = await fetch(`${API_BASE}/api/host/check-domain?domain=${encodeURIComponent(domain)}`);
+  return res.json();
+}
+
+export interface PublishPayload {
+  generationId?: string;
+  files: { name: string; content: string }[];
+  domain: string;
+  businessName?: string;
+  plan?: 'monthly' | 'annual';
+  contactInfo?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    address1: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+  };
+}
+
+export async function publishSite(
+  token: string,
+  payload: PublishPayload,
+): Promise<{
+  success?: boolean;
+  siteId?: string;
+  projectId?: string;
+  deploymentUrl?: string;
+  domain?: string;
+  domainPurchased?: boolean;
+  error?: string;
+}> {
+  const res = await fetch(`${API_BASE}/api/host/publish`, {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+export async function unpublishSite(
+  token: string,
+  siteId: string,
+): Promise<{ success?: boolean; error?: string }> {
+  const res = await fetch(`${API_BASE}/api/host/unpublish`, {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ siteId }),
+  });
+  return res.json();
+}
