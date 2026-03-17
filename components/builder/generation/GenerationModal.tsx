@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useBuilderStore } from '@/store/builderStore';
 import { downloadAsZip } from '@/lib/builder/zipDownload';
 import { supabase } from '@/lib/supabase/client';
@@ -9,6 +9,7 @@ import { parseGeneratedFiles } from '@/lib/builder/fileParser';
 import {
   buildSystemPrompt,
 } from '@/lib/builder/promptBuilder';
+import { checkDomain, publishSite } from '@/lib/api';
 import BrowserPreview from './BrowserPreview';
 import styles from './GenerationModal.module.css';
 
@@ -43,6 +44,25 @@ export default function GenerationModal() {
   const [refineStatus, setRefineStatus] = useState('');
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState('');
+
+  // ── Publish state ──────────────────────────────────────────────────────────
+  const [showPublish, setShowPublish]       = useState(false);
+  const [domainInput, setDomainInput]       = useState('');
+  const [domainChecking, setDomainChecking] = useState(false);
+  const [domainResult, setDomainResult]     = useState<{
+    available?: boolean;
+    purchasePrice?: number;
+    renewalPrice?: number;
+    error?: string;
+  } | null>(null);
+  const [publishStep, setPublishStep]       = useState<'idle' | 'deploying' | 'live' | 'error'>('idle');
+  const [publishResult, setPublishResult]   = useState<{
+    deploymentUrl?: string;
+    domain?: string;
+    siteId?: string;
+  } | null>(null);
+  const [publishError, setPublishError]     = useState('');
+  const domainDebounce                      = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { isGenerating, generationProgress, generatedFiles, showGenerationModal } = store;
 
@@ -91,6 +111,82 @@ export default function GenerationModal() {
     } finally {
       setSaving(false);
       setTimeout(() => setSavedMsg(''), 4000);
+    }
+  };
+
+  // ── Domain check ──────────────────────────────────────────────────────────
+  const handleDomainChange = (val: string) => {
+    setDomainInput(val);
+    setDomainResult(null);
+    if (domainDebounce.current) clearTimeout(domainDebounce.current);
+    const cleaned = val.trim().toLowerCase();
+    if (!cleaned || cleaned.length < 4 || !cleaned.includes('.')) return;
+    domainDebounce.current = setTimeout(async () => {
+      setDomainChecking(true);
+      try {
+        const result = await checkDomain(cleaned);
+        setDomainResult(result);
+      } catch {
+        setDomainResult({ error: 'Could not check domain availability.' });
+      } finally {
+        setDomainChecking(false);
+      }
+    }, 700);
+  };
+
+  // ── Publish ───────────────────────────────────────────────────────────────
+  const handlePublish = async () => {
+    if (publishStep === 'deploying') return;
+    setPublishStep('deploying');
+    setPublishError('');
+    setPublishResult(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setPublishStep('error');
+        setPublishError('Not signed in. Please log in first.');
+        return;
+      }
+
+      const domain = domainInput.trim().toLowerCase() ||
+        `${(store.businessName || 'mysite').toLowerCase().replace(/[^a-z0-9]/g, '')}.vercel.app`;
+
+      const result = await publishSite(session.access_token, {
+        files:        generatedFiles,
+        domain,
+        businessName: store.businessName || undefined,
+        plan:         'monthly',
+      });
+
+      if (result.error) {
+        setPublishStep('error');
+        setPublishError(result.error);
+        return;
+      }
+
+      setPublishResult({
+        deploymentUrl: result.deploymentUrl || undefined,
+        domain:        result.domain || undefined,
+        siteId:        result.siteId || undefined,
+      });
+      setPublishStep('live');
+
+      // Also save to dashboard if not already saved
+      if (!savedMsg) {
+        const snapshot = store.toSnapshot();
+        await supabase.from('generations').insert({
+          user_id:      session.user.id,
+          business_name: store.businessName,
+          industry:      store.industryLabel || store.industryRaw,
+          page_count:    generatedFiles.length,
+          files:         generatedFiles,
+          form_data:     snapshot,
+        });
+      }
+    } catch (err) {
+      setPublishStep('error');
+      setPublishError(err instanceof Error ? err.message : 'Publish failed.');
     }
   };
 
@@ -229,7 +325,14 @@ Return the result in the same format: ===FILE: filename.html=== followed by the 
                 onClick={handleSave}
                 disabled={saving}
               >
-                {saving ? 'Saving…' : '💾 Save to dashboard'}
+                {saving ? 'Saving…' : '💾 Save'}
+              </button>
+              <button
+                type="button"
+                className={`${styles.btnBrowser} ${styles.btnBrowserPublish}`}
+                onClick={() => { setShowPublish(p => !p); setPublishStep('idle'); }}
+              >
+                🚀 Publish
               </button>
               {savedMsg && (
                 <span className={styles.savedMsg}>{savedMsg}</span>
@@ -254,6 +357,117 @@ Return the result in the same format: ===FILE: filename.html=== followed by the 
                   {file.name}
                 </button>
               ))}
+            </div>
+          )}
+
+          {/* Publish panel */}
+          {showPublish && (
+            <div className={styles.publishPanel}>
+              {/* idle / domain step */}
+              {(publishStep === 'idle' || publishStep === 'error') && (
+                <>
+                  <div className={styles.publishHeader}>
+                    <span className={styles.publishIcon}>🚀</span>
+                    <div>
+                      <div className={styles.publishTitle}>Publish your site</div>
+                      <div className={styles.publishSub}>Deploy instantly — your site goes live in seconds</div>
+                    </div>
+                  </div>
+
+                  <div className={styles.publishDomainRow}>
+                    <div className={styles.publishDomainWrap}>
+                      <input
+                        className={styles.publishDomainInput}
+                        type="text"
+                        placeholder="yourbusiness.co.uk  (optional)"
+                        value={domainInput}
+                        onChange={e => handleDomainChange(e.target.value)}
+                        spellCheck={false}
+                        autoComplete="off"
+                      />
+                      {domainChecking && <span className={styles.publishDomainSpinner} />}
+                      {!domainChecking && domainResult && !domainResult.error && (
+                        <span className={domainResult.available ? styles.publishAvail : styles.publishTaken}>
+                          {domainResult.available
+                            ? `✓ Available — £${domainResult.purchasePrice?.toFixed(2)}/yr`
+                            : '✗ Unavailable'}
+                        </span>
+                      )}
+                      {domainResult?.error && (
+                        <span className={styles.publishTaken}>{domainResult.error}</span>
+                      )}
+                    </div>
+                    <div className={styles.publishDomainHint}>
+                      Leave blank to get a free <code>*.vercel.app</code> URL
+                    </div>
+                  </div>
+
+                  {publishStep === 'error' && (
+                    <div className={styles.publishErrorMsg}>⚠ {publishError}</div>
+                  )}
+
+                  <button
+                    type="button"
+                    className={styles.btnPublishGo}
+                    onClick={handlePublish}
+                  >
+                    🚀 Publish &amp; Go Live
+                  </button>
+                </>
+              )}
+
+              {/* deploying step */}
+              {publishStep === 'deploying' && (
+                <div className={styles.publishDeploying}>
+                  <div className={styles.publishSpinOrb} />
+                  <div className={styles.publishDeployTitle}>Deploying your site…</div>
+                  <div className={styles.publishDeploySub}>Creating project · Uploading files · Assigning domain</div>
+                  <div className={styles.publishDeployBar}>
+                    <div className={styles.publishDeployBarFill} />
+                  </div>
+                </div>
+              )}
+
+              {/* live step */}
+              {publishStep === 'live' && publishResult && (
+                <div className={styles.publishLive}>
+                  <div className={styles.publishLiveIcon}>🎉</div>
+                  <div className={styles.publishLiveTitle}>Your site is live!</div>
+                  {publishResult.deploymentUrl && (
+                    <a
+                      href={publishResult.deploymentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.publishLiveUrl}
+                    >
+                      {publishResult.deploymentUrl}
+                    </a>
+                  )}
+                  {domainInput && domainResult?.available && (
+                    <div className={styles.publishDnsNote}>
+                      <strong>Domain linked.</strong> DNS changes can take up to 48 hrs to propagate.
+                      Point your domain's nameservers to Vercel to complete setup.
+                    </div>
+                  )}
+                  <div className={styles.publishLiveActions}>
+                    <a
+                      href={publishResult.deploymentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.btnPublishOpen}
+                    >
+                      Open site ↗
+                    </a>
+                    <button
+                      type="button"
+                      className={styles.btnPublishDone}
+                      onClick={() => setShowPublish(false)}
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
