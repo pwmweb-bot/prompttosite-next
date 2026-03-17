@@ -4,10 +4,10 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
-import { stripeCheckout, stripeInvoices, stripePortal } from '@/lib/api';
+import { stripeCheckout, stripeInvoices, stripePortal, unpublishSite } from '@/lib/api';
 import { downloadAsZip, triggerDownload } from '@/lib/builder/zipDownload';
 import type { Session } from '@supabase/supabase-js';
-import type { Generation } from '@/lib/supabase/types';
+import type { Generation, HostedSite } from '@/lib/supabase/types';
 import styles from './dashboard.module.css';
 
 // ─── Invoice type ─────────────────────────────────────────────────────────────
@@ -74,9 +74,16 @@ function DashboardPageInner() {
   const [generations,    setGenerations]    = useState<Generation[]>([]);
   const [loading,        setLoading]        = useState(true);
   const [isAdmin,        setIsAdmin]        = useState(false);
-  const [activeTab,      setActiveTab]      = useState<'sites' | 'billing'>('sites');
+  const [activeTab,      setActiveTab]      = useState<'sites' | 'hosted' | 'billing'>('sites');
   const [deleteTarget,   setDeleteTarget]   = useState<string | null>(null);
   const [deleting,       setDeleting]       = useState(false);
+
+  // Hosted sites
+  const [hostedSites,    setHostedSites]    = useState<HostedSite[]>([]);
+  const [hostedLoading,  setHostedLoading]  = useState(false);
+  const [hostedLoaded,   setHostedLoaded]   = useState(false);
+  const [unpublishTarget, setUnpublishTarget] = useState<string | null>(null);
+  const [unpublishing,   setUnpublishing]   = useState(false);
 
   // Billing
   const [billingLoading, setBillingLoading] = useState(false);
@@ -130,6 +137,41 @@ function DashboardPageInner() {
 
     setLoading(false);
     if (!error && data) setGenerations(data as Generation[]);
+  }
+
+  // ── Load hosted sites ──────────────────────────────────────────────────────
+  async function loadHostedSites(userId: string) {
+    if (hostedLoaded) return;
+    setHostedLoading(true);
+    const { data, error } = await supabase
+      .from('hosted_sites')
+      .select('id, domain, domain_purchased, vercel_deployment_url, vercel_project_name, billing_plan, status, business_name, created_at, updated_at, generation_id')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    setHostedLoading(false);
+    setHostedLoaded(true);
+    if (!error && data) setHostedSites(data as HostedSite[]);
+  }
+
+  // ── Unpublish ──────────────────────────────────────────────────────────────
+  async function confirmUnpublish() {
+    if (!unpublishTarget || !session) return;
+    setUnpublishing(true);
+
+    const { data: { session: freshSession } } = await supabase.auth.getSession();
+    if (!freshSession) { setUnpublishing(false); return; }
+
+    const { error } = await unpublishSite(freshSession.access_token, unpublishTarget);
+    if (!error) {
+      setHostedSites((prev) => prev.filter((s) => s.id !== unpublishTarget));
+      showToast('Site unpublished successfully.');
+    } else {
+      showToast(`Unpublish failed: ${error}`);
+    }
+
+    setUnpublishTarget(null);
+    setUnpublishing(false);
   }
 
   // ── Download ZIP ───────────────────────────────────────────────────────────
@@ -190,9 +232,10 @@ function DashboardPageInner() {
     setBillingLoaded(true);
   }
 
-  function handleTabChange(tab: 'sites' | 'billing') {
+  function handleTabChange(tab: 'sites' | 'hosted' | 'billing') {
     setActiveTab(tab);
-    if (tab === 'billing') loadBilling();
+    if (tab === 'billing' && session) loadBilling();
+    if (tab === 'hosted' && session) loadHostedSites(session.user.id);
   }
 
   async function startCheckout() {
@@ -245,6 +288,12 @@ function DashboardPageInner() {
           onClick={() => handleTabChange('sites')}
         >
           My websites
+        </button>
+        <button
+          className={`${styles.dashTab} ${activeTab === 'hosted' ? styles.dashTabActive : ''}`}
+          onClick={() => handleTabChange('hosted')}
+        >
+          Live sites
         </button>
         <button
           className={`${styles.dashTab} ${activeTab === 'billing' ? styles.dashTabActive : ''}`}
@@ -319,6 +368,101 @@ function DashboardPageInner() {
                         <button
                           className={styles.cardBtn}
                           onClick={() => setDeleteTarget(gen.id)}
+                        >
+                          🗑
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Live sites panel */}
+      {activeTab === 'hosted' && (
+        <div>
+          <div className={styles.pageHeader}>
+            <div>
+              <h1>Live sites</h1>
+              <p>
+                {hostedLoading
+                  ? 'Loading your live sites…'
+                  : hostedSites.length === 0
+                    ? 'No live sites yet — publish one from the builder!'
+                    : `${hostedSites.length} published site${hostedSites.length === 1 ? '' : 's'}`}
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.hostedGrid}>
+            {hostedLoading ? (
+              [0, 1].map((i) => (
+                <div key={i} className={styles.skelCard}>
+                  <div className={`${styles.skeleton} ${styles.skelPreview}`} />
+                  <div className={styles.skelBody}>
+                    <div className={`${styles.skeleton} ${styles.skelTitle}`} />
+                    <div className={`${styles.skeleton} ${styles.skelMeta}`} />
+                    <div className={`${styles.skeleton} ${styles.skelBtns}`} />
+                  </div>
+                </div>
+              ))
+            ) : hostedSites.length === 0 ? (
+              <div className={styles.emptyState}>
+                <div className={styles.emptyIcon}>🚀</div>
+                <h2>No live sites yet</h2>
+                <p>Generate a website in the builder and click the Publish button to go live with a real domain.</p>
+                <a href="/build" className={styles.btnPrimaryLg}>Build &amp; publish →</a>
+              </div>
+            ) : (
+              hostedSites.map((site) => {
+                const date       = new Date(site.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                const isLive     = site.status === 'live';
+                const isFailed   = site.status === 'failed';
+                const liveUrl    = isLive
+                  ? (site.domain_purchased ? `https://${site.domain}` : site.vercel_deployment_url ?? '')
+                  : site.vercel_deployment_url ?? '';
+
+                return (
+                  <div key={site.id} className={styles.hostedCard}>
+                    <div className={`${styles.hostedCardHeader} ${isLive ? styles.hostedCardHeaderLive : isFailed ? styles.hostedCardHeaderFail : styles.hostedCardHeaderPending}`}>
+                      <div className={styles.hostedGlobe}>🌐</div>
+                      <span className={`${styles.hostedBadge} ${isLive ? styles.hostedBadgeLive : isFailed ? styles.hostedBadgeFail : styles.hostedBadgePending}`}>
+                        {isLive ? '● Live' : isFailed ? '✕ Failed' : '◌ Pending'}
+                      </span>
+                    </div>
+                    <div className={styles.cardBody}>
+                      <div className={styles.cardTitle} title={site.domain}>{site.domain}</div>
+                      {site.business_name && (
+                        <div className={styles.hostedBusiness}>{site.business_name}</div>
+                      )}
+                      <div className={styles.cardMeta}>
+                        <span>📅 {date}</span>
+                        <span>💳 {site.billing_plan === 'annual' ? 'Annual' : 'Monthly'}</span>
+                      </div>
+                      {liveUrl && (
+                        <div className={styles.hostedUrl}>
+                          <a href={liveUrl} target="_blank" rel="noopener noreferrer" className={styles.hostedUrlLink}>
+                            {liveUrl.replace(/^https?:\/\//, '')}
+                          </a>
+                        </div>
+                      )}
+                      <div className={styles.cardActions}>
+                        {liveUrl && (
+                          <a
+                            href={liveUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`${styles.cardBtn} ${styles.cardBtnPrimary}`}
+                          >
+                            🌐 Open site
+                          </a>
+                        )}
+                        <button
+                          className={styles.cardBtn}
+                          onClick={() => setUnpublishTarget(site.id)}
                         >
                           🗑
                         </button>
@@ -436,6 +580,22 @@ function DashboardPageInner() {
               <button className={styles.btnCancel} onClick={() => setDeleteTarget(null)}>Cancel</button>
               <button className={styles.btnDanger} onClick={confirmDelete} disabled={deleting}>
                 {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unpublish modal */}
+      {unpublishTarget && (
+        <div className={styles.overlay} onClick={() => setUnpublishTarget(null)}>
+          <div className={styles.confirmBox} onClick={(e) => e.stopPropagation()}>
+            <h3>Unpublish this site?</h3>
+            <p>This will take the site offline and remove it from Vercel. Your domain registration (if purchased) is separate and not affected.</p>
+            <div className={styles.confirmActions}>
+              <button className={styles.btnCancel} onClick={() => setUnpublishTarget(null)}>Cancel</button>
+              <button className={styles.btnDanger} onClick={confirmUnpublish} disabled={unpublishing}>
+                {unpublishing ? 'Unpublishing…' : 'Unpublish'}
               </button>
             </div>
           </div>

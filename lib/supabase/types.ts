@@ -1,3 +1,24 @@
+export interface HostedSite {
+  id: string;
+  user_id: string;
+  generation_id: string | null;
+  domain: string;
+  domain_purchased: boolean;
+  domain_verified: boolean;
+  vercel_project_id: string | null;
+  vercel_project_name: string | null;
+  vercel_deployment_id: string | null;
+  vercel_deployment_url: string | null;
+  billing_plan: 'monthly' | 'annual';
+  billing_amount: number | null;
+  domain_price: number | null;
+  status: 'pending' | 'live' | 'failed' | 'cancelled';
+  error_message: string | null;
+  business_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Generation {
   id: string;
   user_id: string;
