@@ -285,7 +285,9 @@ export function buildSystemPrompt(imageUrls?: ImageUrl[]): string {
 Output EVERY file using EXACTLY this separator format — no exceptions:
 
 === FILE: filename.html ===
-[complete file contents]
+[complete file contents here — raw HTML only, NO markdown, NO code fences]
+
+CRITICAL: Never wrap file contents in markdown code fences (\`\`\`html or \`\`\`). Output raw HTML directly after the === FILE: === separator line.
 
 Rules:
 - Each file must be a complete, standalone HTML document with all CSS in <style> and JS in <script> tags
@@ -320,7 +322,9 @@ export function buildContinuationSystemPrompt(
 Output each file using EXACTLY this separator format:
 
 === FILE: filename.html ===
-[complete file contents]
+[complete file contents here — raw HTML only, NO markdown, NO code fences]
+
+CRITICAL: Never wrap file contents in markdown code fences (\`\`\`html or \`\`\`). Output raw HTML directly after the === FILE: === separator line.
 
 Design system already in use (copy :root variables exactly, do not alter values):
 ${rootCss || '(see index.html for CSS variables)'}
