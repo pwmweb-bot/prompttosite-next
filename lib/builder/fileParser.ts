@@ -11,8 +11,13 @@ export function parseGeneratedFiles(
   let match: RegExpExecArray | null;
 
   while ((match = pattern.exec(text)) !== null) {
-    const name    = match[1].trim();
-    const content = match[2].trim();
+    const name = match[1].trim();
+    // Strip markdown code fences if the AI wrapped the content (```html ... ```)
+    const raw = match[2].trim();
+    const content = raw
+      .replace(/^```[\w]*\n?/, '')
+      .replace(/\n?```\s*$/, '')
+      .trim();
     if (content) {
       files.push({ name, content });
     }
