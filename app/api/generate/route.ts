@@ -18,7 +18,12 @@ export async function POST(req: NextRequest) {
       'anthropic-version': '2023-06-01',
       'content-type':      'application/json',
     },
-    body: JSON.stringify({ ...body, stream: true }),
+    body: JSON.stringify({
+      model:      'claude-opus-4-5',
+      max_tokens: 8000,
+      ...body,
+      stream:     true,
+    }),
   });
 
   if (!upstream.ok) {
