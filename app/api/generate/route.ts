@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
   const API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -19,8 +19,8 @@ export async function POST(req: NextRequest) {
       'content-type':      'application/json',
     },
     body: JSON.stringify({
-      model:      'claude-opus-4-5',
-      max_tokens: 8000,
+      model:      'claude-sonnet-4-5',
+      max_tokens: 16000,
       ...body,
       stream:     true,
     }),

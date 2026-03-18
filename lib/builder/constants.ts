@@ -104,7 +104,7 @@ export interface PageDetailConfig {
 export const allPages: PageOption[] = [
   { id: 'pg_home',         label: '🏠 Home',                      checked: true,  locked: true  },
   { id: 'pg_about',        label: '👤 About Us',                  checked: true,  locked: false },
-  { id: 'pg_services',     label: '🛠️ Services / Offerings',      checked: true,  locked: false },
+  { id: 'pg_services',     label: '🛠️ Services / Offerings',      checked: false, locked: false },
   { id: 'pg_contact',      label: '📬 Contact',                   checked: true,  locked: false },
   { id: 'pg_pricing',      label: '💰 Pricing',                   checked: false, locked: false },
   { id: 'pg_blog',         label: '📝 Blog / News',               checked: false, locked: false },
@@ -114,7 +114,7 @@ export const allPages: PageOption[] = [
   { id: 'pg_team',         label: '👥 Meet the Team',             checked: false, locked: false },
   { id: 'pg_gallery',      label: '📸 Gallery',                   checked: false, locked: false },
   { id: 'pg_booking',      label: '📅 Book / Schedule Online',    checked: false, locked: false },
-  { id: 'pg_privacy',      label: '🔒 Privacy Policy',            checked: true,  locked: false },
+  { id: 'pg_privacy',      label: '🔒 Privacy Policy',            checked: false, locked: false },
   { id: 'pg_terms',        label: '📄 Terms & Conditions',        checked: false, locked: false },
 ];
 
