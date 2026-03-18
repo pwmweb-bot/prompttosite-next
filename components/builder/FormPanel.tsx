@@ -18,6 +18,7 @@ import {
   CheckgroupOption,
 } from '@/lib/builder/constants';
 import { extractBrand, analyseUrl } from '@/lib/api';
+import ImagePicker from './form/ImagePicker';
 import styles from './FormPanel.module.css';
 
 // ─── Industry Groups ──────────────────────────────────────────────────────────
@@ -964,6 +965,10 @@ export default function FormPanel({ onGenerate }: FormPanelProps) {
           onChange={(e) => store.setField('extras', e.target.value)}
         />
       </div>
+
+      {/* ── Images ───────────────────────────────────────────────────────── */}
+      <div className={styles.sectionTitle}>Images</div>
+      <ImagePicker />
 
       {/* ── Generate button ──────────────────────────────────────────────── */}
       <div className={styles.generateBar}>

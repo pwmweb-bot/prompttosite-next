@@ -27,13 +27,16 @@ export default function BuildPage() {
   };
 
   const handleGenerate = async () => {
-    // Pre-fetch images before generation
-    const query = [store.industryLabel, store.seoKeywords].filter(Boolean).join(' ') || 'business';
-    try {
-      const { images } = await fetchImages(query, 15);
-      store.setField('imageUrls', images);
-    } catch {
-      // Continue without images
+    // If user hasn't manually selected images via the picker, auto-fetch some
+    if (store.imageUrls.length === 0) {
+      const query = [store.industryLabel, store.seoKeywords, store.businessName]
+        .filter(Boolean).join(' ') || 'business';
+      try {
+        const { images } = await fetchImages(query, 15);
+        store.setField('imageUrls', images);
+      } catch {
+        // Continue without images
+      }
     }
     await generate();
   };
